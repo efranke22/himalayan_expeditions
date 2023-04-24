@@ -1,0 +1,257 @@
+---
+title: "Himalayan Expeditions"
+author: "Erin Franke"
+date: "2023-03-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(foreign)
+```
+
+```{r, message=FALSE, warning=FALSE}
+expeditions <- read.dbf("HIMDATA/exped.DBF")
+members <- read.dbf("HIMDATA/members.DBF")
+peaks <- read.dbf("HIMDATA/peaks.DBF")
+```
+
+```{r}
+members <- read.dbf("HIMDATA/members.DBF")
+members <- members %>%
+  filter(PEAKID %in% c("EVER", "AMAD", "CHOY", "MANA", "DHA1", "LHOT", "MAKA")) %>%
+  filter(STATUS %in% c("Climber", "H-A Worker", "Leader"))
+```
+
+## Oxygen and success
+
+Overall success
+
+```{r}
+members %>%
+  count(MO2USED, MSUCCESS) %>%
+  pivot_wider(id_cols = MSUCCESS, names_from = MO2USED, values_from =n) %>%
+  rename("NoOxygen" = "FALSE", 
+         "YesOxygen" = "TRUE") %>%
+  mutate(percOxygen = round(YesOxygen/(YesOxygen+NoOxygen), 3))
+```
+
+## PEAK
+
+Overall success: 44.55%
+
+```{r}
+members %>%
+  count(MSUCCESS)
+```
+
+Success by peak:
+
+```{r}
+members %>%                                  
+  group_by(MSUCCESS, PEAKID, MO2USED) %>%
+  count() %>%
+  pivot_wider(id_cols = PEAKID, names_from = MSUCCESS, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percSuccess = round(Success/(Success+Failure), 3))
+```
+
+Using oxygen versus peak climbed
+
+```{r}
+members %>%
+  group_by(PEAKID, MO2USED) %>%
+  count() %>%
+  pivot_wider(id_cols = PEAKID, names_from = MO2USED, values_from = n) %>%
+  rename("NoOxygen" = "FALSE", 
+         "YesOxygen" = "TRUE") %>%
+  mutate(percOxygen = round(YesOxygen/(YesOxygen+NoOxygen), 3))
+```
+
+## Age versus success and oxygen used
+
+Age doesn't really seem to impact if oxygen is used
+
+```{r}
+members %>%
+  ggplot(aes(x=CALCAGE, fill = MO2USED))+
+  geom_density(alpha=0.4)
+```
+
+Age might impact success a little bit
+
+```{r}
+members %>%
+  ggplot(aes(x=CALCAGE, fill=MSUCCESS))+
+  geom_density(alpha=0.4)
+```
+
+## Season
+
+Oxygen is used far more often in spring than fall
+
+```{r}
+members %>%                                  
+  group_by(MO2USED, MSEASON) %>%
+  count() %>%
+  pivot_wider(id_cols = MSEASON, names_from = MO2USED, values_from = n) %>%
+  rename("NoOxygen" = "FALSE", 
+         "YesOxygen" = "TRUE") %>%
+  mutate(percOxygen = round(YesOxygen/(YesOxygen+NoOxygen), 3))
+```
+
+Success rates are highest in spring and fall and lowest in summer and winter
+
+```{r}
+members %>%                                  
+  group_by(MSUCCESS, MSEASON) %>%
+  count() %>%
+  pivot_wider(id_cols = MSEASON, names_from = MSUCCESS, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percSuccess = round(Success/(Success+Failure), 3))
+```
+
+## Sex
+
+Oxygen use does not seem impacted by sex
+
+```{r}
+members %>%     
+  filter(SEX != "X") %>%
+  group_by(MO2USED, SEX) %>%
+  count() %>%
+  pivot_wider(id_cols = SEX, names_from = MO2USED, values_from = n) %>%
+  rename("NoOxygen" = "FALSE", 
+         "YesOxygen" = "TRUE") %>%
+  mutate(percOxygen = round(YesOxygen/(YesOxygen+NoOxygen), 3))
+```
+
+Sex may impact success rate
+
+```{r}
+members %>%     
+  filter(SEX != "X") %>%
+  group_by(MSUCCESS, SEX) %>%
+  count() %>%
+  pivot_wider(id_cols = SEX, names_from = MSUCCESS, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percSuccess = round(Success/(Success+Failure), 3))
+```
+
+```{r}
+members %>%     
+  filter(SEX != "X") %>%
+  group_by(PEAKID, SEX) %>%
+  count() %>%
+  pivot_wider(id_cols = PEAKID, names_from = SEX, values_from = n) %>%
+  mutate(percM = round(M/(M+F), 3))
+```
+
+
+## Leader
+
+Leaders use oxygen at a lower rate than non-leaders
+
+```{r}
+members %>%     
+  group_by(MO2USED, STATUS) %>%
+  count() %>%
+  pivot_wider(id_cols = STATUS, names_from = MO2USED, values_from = n) %>%
+  rename("NoOxygen" = "FALSE", 
+         "YesOxygen" = "TRUE") %>%
+  mutate(percOxygen = round(YesOxygen/(YesOxygen+NoOxygen), 3))
+```
+
+Success doesn't necessarily seem dependent on whether you are a leader
+
+```{r}
+members %>%     
+  group_by(MSUCCESS, STATUS) %>%
+  count() %>%
+  pivot_wider(id_cols = STATUS, names_from = MSUCCESS, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percSuccess = round(Success/(Success+Failure), 3))
+```
+
+## INJURY
+
+```{r}
+members %>%     
+  group_by(MSUCCESS, INJURY) %>%
+  count() %>%
+  pivot_wider(id_cols = INJURY, names_from = MSUCCESS, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percSuccess = round(Success/(Success+Failure), 3))
+```
+
+```{r}
+members %>%     
+  group_by(MO2USED, INJURY) %>%
+  count() %>%
+  pivot_wider(id_cols = INJURY, names_from = MO2USED, values_from = n) %>%
+  rename("Failure" = "FALSE", 
+         "Success" = "TRUE") %>%
+  mutate(percOxygen = round(Success/(Success+Failure), 3))
+```
+
+# IPW Exploratory Analysis
+
+Should consider an interaction between season and peakid?
+
+```{r}
+ ggplot(members %>% filter(MSEASON %in% c("1", "3")), aes(x = factor(PEAKID), fill = factor(MO2USED))) +
+    geom_bar(position = "fill") +
+    facet_grid(~factor(MSEASON))
+
+members %>% 
+  filter(MSEASON %in% c("1", "3")) %>%
+  group_by(MSEASON, PEAKID) %>%
+  count() %>%
+  pivot_wider(id_cols = PEAKID, names_from = MSEASON, values_from = n) %>%
+  rename("Spring" = `1`, 
+         "Fall" = `3`) %>%
+  mutate(percSpring = round(Spring/(Spring+Fall), 3))
+```
+
+Don't need interactions between SEX/PEAKID or SEX/SEASON
+
+```{r}
+ ggplot(members %>% filter(SEX != "X"), aes(x = factor(PEAKID), fill = factor(MO2USED))) +
+    geom_bar(position = "fill") +
+    facet_grid(~factor(SEX))
+
+ ggplot(members %>% filter(SEX != "X"), aes(x = factor(MSEASON), fill = factor(MO2USED))) +
+    geom_bar(position = "fill") +
+    facet_grid(~factor(SEX))
+```
+
+
+```{r}
+members %>%
+  ggplot(aes(x=CALCAGE, fill=STATUS))+
+  geom_density(alpha=0.5)
+```
+
+
+Potentially line between status and sex
+
+```{r}
+members %>%   
+  group_by(SEX, STATUS) %>%
+  count() %>%
+  pivot_wider(id_cols = STATUS, names_from = SEX, values_from = n) %>%
+  mutate(percClimber = round(M/(M+`F`), 3))
+```
+
+
+
+
