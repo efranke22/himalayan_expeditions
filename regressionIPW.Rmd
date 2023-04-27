@@ -194,6 +194,30 @@ broom::tidy(overall_fit) %>%
     )
 ```
 
+Now we can use the IP weights constructed above in a weighted regression model to estimate causal effects.
+
+```{r}
+# Set up information about weights
+design <- svydesign(ids = ~0, weights = members$ipw, data = members)
+
+# Fit a marginal structural model to estimate overall ACE
+overall_fit <- svyglm(
+    MSUCCESS ~ MO2USED,
+    data = members,
+    design = design,
+    family = "quasibinomial"
+)
+
+broom::tidy(overall_fit) %>%
+    filter(str_detect(term, "MO2USED")) %>%
+    mutate(
+        odds_ratio = exp(estimate),
+        ci_lower = exp(estimate - qnorm(0.975)*std.error),
+        ci_upper = exp(estimate + qnorm(0.975)*std.error)
+    )
+```
+
+
 # Sensitivity 
 
 ```{r}
