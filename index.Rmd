@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 On May 29, 1953, New Zealand’s Ed Hillary and Darjeeling’s Sherpa Tenzing Norgay became the first known humans to reach the summit of Mount Everest - the highest point on this Earth [@everest]. Mount Everest is located on the border of Tibet and Nepal and is part of the Himalayan Mountains, which span roughly 1,500 miles and cover parts of India, Pakistan, Afghanistan, China, Bhutan and Nepal [@fultonk_2021]. 
 
-Climbing these mountains is risky and dangerous. For Mount Everest, the most heavily studied of the peaks, the death rate has remained steady at roughly 1%, though over the past three decades there is evidence from a study by the University of Washington that the success rate of summiting has doubled. Why is this? The researchers site a number of potential reasons, including better weather forecasts, elevated flow rates of supplemental oxygen, fixed lines, and experience of leaders [@ma_2020].  
+Climbing these mountains is risky and dangerous. For Mount Everest, the most heavily studied of the peaks, the death rate has remained steady at roughly 1%, though over the past three decades there is evidence from a study by the University of Washington that the success rate of summiting has doubled. Why is this? The researchers note a number of potential reasons, including better weather forecasts, elevated flow rates of supplemental oxygen, fixed lines, and experience of leaders [@ma_2020].  
 
 I am wondering what the true effect of using oxygen on reaching the summit of the Himalayan peaks is. Does it make a difference? I will use techniques I learned in my Causal Inference class at Macalester to find out. 
 
@@ -70,9 +70,9 @@ members %>%
 
 ## Exploring variables that can impact treatment and outcome
 
-Next, what variables could impact both ascent success and whether or not someone uses oxygen? There are a few that come to mind: the hiker's age, their sex, what season they climb in, what peak they are climbing to, their role, and maybe whether they get injured on the journey.
+Next, what variables could impact both ascent success and whether or not someone uses oxygen? There are a few that come to mind: the hiker's age, their sex, what season they climb in, what peak they are climbing to, and their role.
 
-Let's first see if oxygen use and success varies with age. It appears that the average age for those that do not successfully ascend their peak is slightly higher than those that do, but not by too much. The relationship between oxygen use and age is very weak. We can consider a link between age and success and in our causal diagram, but will not include one between age and oxygen. 
+Let's first see if oxygen use and success varies with age. It appears that the average age for those that do not successfully ascend their peak is slightly higher than those that do, but not by too much. The relationship between oxygen use and age is very weak. We can consider a link between age and success in our causal diagram, but will not include one between age and oxygen. 
 
 ```{r, fig.show="hold", out.width='45%'}
 members %>%
@@ -249,7 +249,7 @@ These paths contain no colliders, only forks and chains. We can block each of th
 From our noncausal paths, we learned that we can get **exchangeability** of the summiting potential outcomes across treatment (oxygen use) groups conditional on `Role`, `Season`, and `Peak`. This means we can look within subsets of the data defined by `Role`, `Season` and `Peak` and fairly compare the average outcome (probability of summiting) between the treatment groups.
 
 In other words,
-$$Y^a {\ind} A \Big| \text{ Role, Season, Peak} \quad \text{where } Y = \text{Success, } A = \text{Oxygen}$$
+$$Y^a \ind A \Big| \text{ Role, Season, Peak} \quad \text{where } Y = \text{Success, } A = \text{Oxygen}$$
 
 Because the outcome (success) is binary, we can fit a logistic regression model to simultaneously quantify the relationship between treatment and outcome while conditioning on Role ($R$), Season ($S$), and Peak ($P$). 
 
@@ -338,7 +338,7 @@ ggplot(members, aes(x = MSEASON, fill = MO2USED)) +
 
 ggplot(members, aes(x = MSEASON, fill = MO2USED, weight = ipw)) +
   geom_bar(position = "fill")+
-    labs(title = "After IPW", x = "Peak", y= "Proportion of hikers using oxygen", fill = "Oxygen used?")+
+    labs(title = "After IPW", x = "Season", y= "Proportion of hikers using oxygen", fill = "Oxygen used?")+
   scale_fill_manual(values = c("lightcoral", "lightsteelblue2"))
 ```
 
@@ -364,15 +364,15 @@ broom::tidy(overall_fit) %>%
     )
 ```
 
-With IPW,  we learn that if all hikers used oxygen, the odds of summiting would be multiplied by 7 as compared to all hikers not using oxygen. This is significantly smaller than with our outcome regression, but still quite significant as the confidence interval spans [5.89, 9.46]. There is pretty strong evidence that oxygen is beneficial when seeking a successful summit.
+With IPW,  we learn that if all hikers used oxygen, the odds of summiting would be multiplied by 7.46 as compared to all hikers not using oxygen. This is significantly smaller than with our outcome regression, but still quite significant as the confidence interval spans [5.89, 9.46]. There is pretty strong evidence that oxygen is beneficial when seeking a successful summit.
 
 # A note about sensitivity analyses
 
 A typical final step of causal analysis is conduct a sensitivity analysis. A sensitivity analysis asks how strongly associated must unmeasured variables be with other variables in our graph to qualitatively change results. The most important unmeasured variable in our analysis that I can think of would be hiker health. I would assume hikers in poor health are more likely to use oxygen than hikers in good health and that these hikers in poor health are less likely to successfully summit than hikers in good health. 
 
-If, for some reason, hikers in poor health were *less* likely to use oxygen than hikers in good health in addition to being less likely to summit, this unmeasured variable could be confounding and impact our results. A sensitivity analysis could tell us what the estimated average causal effect of using oxygen on summit success would be for a given confounder-exposure and confounder-outcome relationship and/or how stronger these effects would have to be for the effect of oxygen to be insignificant. 
+If, for some reason, hikers in poor health were *less* likely to use oxygen than hikers in good health in addition to being less likely to summit, this unmeasured variable could be confounding and impact our results. A sensitivity analysis could tell us what the estimated average causal effect of using oxygen on summit success would be for a given confounder-exposure and confounder-outcome relationship. It could also tell us how strong these effects would have to be for the effect of oxygen to be insignificant. 
 
-In reality, because we expect that hikers in poor health are more likely to use oxygen than hikers in good health and that these hikers in poor health are less likely to successfully summit than hikers in good health, a sensitivity analysis not required. Including such an unmeasured variable like hiker health in our model would like only increase our estimated odds ratio.
+In reality, because we expect that hikers in poor health are more likely to use oxygen than hikers in good health and that these hikers in poor health are less likely to successfully summit than hikers in good health, a sensitivity analysis not helpful. Including such an unmeasured variable like hiker health in our model would like only increase our estimated odds ratio.
 
 # Conclusions
 
