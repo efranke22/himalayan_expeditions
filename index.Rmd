@@ -249,7 +249,7 @@ These paths contain no colliders, only forks and chains. We can block each of th
 From our noncausal paths, we learned that we can get **exchangeability** of the summiting potential outcomes across treatment (oxygen use) groups conditional on `Role`, `Season`, and `Peak`. This means we can look within subsets of the data defined by `Role`, `Season` and `Peak` and fairly compare the average outcome (probability of summiting) between the treatment groups.
 
 In other words,
-$$Y^a \ind A \Big| \text{ Role, Season, Peak} \quad \text{where } Y = \text{Success, } A = \text{Oxygen}$$
+$$Y^a   \perp\!\!\!\perp A \Big| \text{ Role, Season, Peak} \quad \text{where } Y = \text{Success, } A = \text{Oxygen}$$
 
 Because the outcome (success) is binary, we can fit a logistic regression model to simultaneously quantify the relationship between treatment and outcome while conditioning on Role ($R$), Season ($S$), and Peak ($P$). 
 

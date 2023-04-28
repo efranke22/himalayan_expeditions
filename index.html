@@ -824,9 +824,9 @@ across treatment (oxygen use) groups conditional on <code>Role</code>,
 within subsets of the data defined by <code>Role</code>,
 <code>Season</code> and <code>Peak</code> and fairly compare the average
 outcome (probability of summiting) between the treatment groups.</p>
-<p>In other words, <span class="math display">\[Y^a \ind A \Big| \text{
-Role, Season, Peak} \quad \text{where } Y = \text{Success, } A =
-\text{Oxygen}\]</span></p>
+<p>In other words, <span class="math display">\[Y^a   \perp\!\!\!\perp A
+\Big| \text{ Role, Season, Peak} \quad \text{where } Y = \text{Success,
+} A = \text{Oxygen}\]</span></p>
 <p>Because the outcome (success) is binary, we can fit a logistic
 regression model to simultaneously quantify the relationship between
 treatment and outcome while conditioning on Role (<span class="math inline">\(R\)</span>), Season (<span class="math inline">\(S\)</span>), and Peak (<span class="math inline">\(P\)</span>).</p>
